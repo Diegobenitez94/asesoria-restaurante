@@ -38,3 +38,73 @@ a{
 .boton{
     opacity:0;
 }
+
+.factura {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+    color: #171717;
+    background: #fff;
+}
+.factura__encabezado {
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #222;
+}
+.factura__encabezado h1 {
+    margin-bottom: .25rem;
+}
+.factura__cliente {
+    padding: 1.5rem 0;
+}
+.factura__tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+.factura__tabla th,
+.factura__tabla td {
+    padding: .65rem;
+    border-bottom: 1px solid #bbb;
+    text-align: left;
+}
+.factura__tabla tfoot th {
+    border-top: 2px solid #222;
+    border-bottom: 0;
+}
+.factura__nota {
+    margin-top: 2rem;
+    font-size: .85rem;
+}
+.sms-demo {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid #c6d8cf;
+    border-radius: 6px;
+    background: #f1f8f4;
+    text-align: left;
+}
+.sms-demo p {
+    margin: .5rem 0;
+}
+.sms-demo small {
+    color: #4b6257;
+}
+
+@media print {
+    @page {
+        margin: 15mm;
+    }
+    body.imprimiendo-factura {
+        background: #fff;
+        overflow: visible;
+    }
+    body.imprimiendo-factura > *:not(main),
+    body.imprimiendo-factura main > *:not(#factura) {
+        display: none !important;
+    }
+    body.imprimiendo-factura #factura {
+        display: block !important;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+}

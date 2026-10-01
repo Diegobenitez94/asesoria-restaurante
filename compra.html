@@ -15,12 +15,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
     
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-
-    <script type="text/javascript">
-        emailjs.init('0bU4qjecNcP2aiuNx')
-    </script>
-</body>
     <title>Compra</title>
 </head>
 
@@ -56,6 +50,14 @@
                             <label for="email" class="col-12 col-md-2 col-form-label h2">Correo :</label>
                             <div class="col-12 col-md-10">
                             <input type="email" id="correo" class="form-control" name="email.id" required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="telefono" class="col-12 col-md-2 col-form-label h2">Teléfono móvil :</label>
+                            <div class="col-12 col-md-10">
+                                <input type="tel" id="telefono" class="form-control" name="telefono"
+                                    placeholder="+573001234567" pattern="\+?[0-9]{7,15}"
+                                    autocomplete="tel" required>
                             </div>
                         </div>
 
@@ -108,6 +110,7 @@
             </div>
 
         </div>
+        <section id="factura" class="factura d-none" aria-hidden="true"></section>
     </main>
 
 

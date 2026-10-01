@@ -197,6 +197,7 @@ async function enviarCompra(event) {
   event.preventDefault();
   const cliente = document.querySelector("#cliente").value.trim();
   const email = document.querySelector("#correo").value.trim();
+  const telefono = document.querySelector("#telefono").value.trim();
   const button = document.querySelector("#button");
   const spinner = document.querySelector("#spinner");
 
@@ -204,10 +205,20 @@ async function enviarCompra(event) {
     mostrarAlerta("Tu carrito está vacío", "Agrega productos antes de finalizar la compra.", "error");
     return;
   }
-  if (!cliente || !email) {
-    mostrarAlerta("Completa tus datos", "Ingresa tu nombre y un correo válido.", "error");
+  if (!cliente || !email || !telefono) {
+    mostrarAlerta("Completa tus datos", "Ingresa tu nombre, correo y teléfono móvil.", "error");
     return;
   }
+
+  const pedido = {
+    numero: `FOOD-${Date.now()}`,
+    fecha: new Date(),
+    cliente,
+    email,
+    telefono,
+    productos: carrito.map((producto) => ({ ...producto })),
+    total: carrito.reduce((total, producto) => total + producto.cantidad * producto.precio, 0),
+  };
 
   button.disabled = true;
   button.value = "Enviando...";
@@ -215,23 +226,98 @@ async function enviarCompra(event) {
   spinner.classList.add("d-flex");
 
   try {
-    if (typeof emailjs === "undefined") {
-      throw new Error("El servicio de correo no está disponible.");
-    }
-
-    await emailjs.sendForm("default_service", "template_qxwi0jn", formulario);
+    await new Promise((resolve) => setTimeout(resolve, 500));
     carrito = [];
     mostrarCarrito();
     procesarPedido();
+    const resultado = await Swal.fire({
+      title: "Compra confirmada (demo)",
+      html: `
+        <p>Comprobante listo para imprimir o guardar como PDF.</p>
+        <section class="sms-demo" aria-label="Vista previa de SMS de demostración">
+          <strong>SMS simulado para ${escaparHtml(telefono)}</strong>
+          <p>FOOD+: recibimos tu pedido ${pedido.numero} por ${formatearPrecio(pedido.total)}. Gracias, ${escaparHtml(cliente)}.</p>
+          <small>Demostración con datos ficticios. No se envió un mensaje de texto real.</small>
+        </section>
+      `,
+      icon: "success",
+      showCancelButton: true,
+      confirmButtonText: "Imprimir comprobante",
+      cancelButtonText: "Cerrar",
+    });
+    if (resultado.isConfirmed) {
+      imprimirFactura(pedido);
+    }
     formulario.reset();
-    mostrarAlerta("Compra realizada", "Recibirás la confirmación en tu correo.", "success");
   } catch (error) {
-    console.error("No se pudo enviar la compra:", error);
-    mostrarAlerta("No se pudo completar la compra", "Revisa la conexión e inténtalo de nuevo. Tu carrito sigue guardado.", "error");
+    console.error("No se pudo completar la demostración de compra:", error);
+    mostrarAlerta("No se pudo completar la compra", "Inténtalo de nuevo. Tu carrito sigue guardado.", "error");
   } finally {
     button.disabled = false;
     button.value = "Finalizar compra";
     spinner.classList.add("d-none");
     spinner.classList.remove("d-flex");
   }
+}
+
+function imprimirFactura(pedido) {
+  const factura = document.querySelector("#factura");
+  const filas = pedido.productos.map((producto) => `
+    <tr>
+      <td>${escaparHtml(producto.nombre.trim())}</td>
+      <td>${producto.cantidad}</td>
+      <td>${formatearPrecio(producto.precio)}</td>
+      <td>${formatearPrecio(producto.precio * producto.cantidad)}</td>
+    </tr>
+  `).join("");
+
+  factura.innerHTML = `
+    <header class="factura__encabezado">
+      <h1>FOOD+</h1>
+      <p>Comprobante de compra</p>
+      <p><strong>Restaurante:</strong> FOOD+ Restaurante (datos de demostración)</p>
+      <p><strong>Número:</strong> ${pedido.numero}</p>
+      <p><strong>Fecha:</strong> ${pedido.fecha.toLocaleString("es-CO")}</p>
+    </header>
+    <section class="factura__cliente">
+      <h2>Datos del cliente</h2>
+      <p><strong>Nombre:</strong> ${escaparHtml(pedido.cliente)}</p>
+      <p><strong>Correo:</strong> ${escaparHtml(pedido.email)}</p>
+      <p><strong>Teléfono:</strong> ${escaparHtml(pedido.telefono)}</p>
+    </section>
+    <table class="factura__tabla">
+      <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead>
+      <tbody>${filas}</tbody>
+      <tfoot><tr><th colspan="3">Total</th><th>${formatearPrecio(pedido.total)}</th></tr></tfoot>
+    </table>
+    <p class="factura__nota">Documento de demostración con datos ficticios. Es un comprobante de pedido y no reemplaza una factura electrónica tributaria.</p>
+  `;
+
+  factura.classList.remove("d-none");
+  factura.setAttribute("aria-hidden", "false");
+  document.body.classList.add("imprimiendo-factura");
+  window.addEventListener("afterprint", () => {
+    document.body.classList.remove("imprimiendo-factura");
+    factura.classList.add("d-none");
+    factura.setAttribute("aria-hidden", "true");
+  }, { once: true });
+  window.print();
+}
+
+function formatearPrecio(valor) {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0,
+  }).format(valor);
+}
+
+function escaparHtml(valor) {
+  return valor.replace(/[&<>"']/g, (caracter) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[caracter]);
 }
