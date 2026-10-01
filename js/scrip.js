@@ -13,6 +13,7 @@ const campos = {
   usuario: false,
   nombre: false,
   password: false,
+  password2: false,
   correo: false,
   telefono: false,
 };
@@ -82,10 +83,11 @@ const validarCampo = (expresion, input, campo) => {
 };
 
 const validarPassword2 = () => {
-  let inputPassword1 = document.getElementById("password");
-  let inptPassword2 = document.getElementById("password2");
+  const inputPassword1 = document.getElementById("password");
+  const inputPassword2 = document.getElementById("password2");
+  const coincide = inputPassword1.value.length > 0 && inputPassword1.value === inputPassword2.value;
 
-  if (inputPassword1.value !== inptPassword2.value) {
+  if (!coincide) {
     document
       .getElementById(`grupo__password2`)
       .classList.add("formulario__grupo-incorrecto");
@@ -101,7 +103,7 @@ const validarPassword2 = () => {
     document
       .querySelector(`#grupo__password2 .formulario__input-error`)
       .classList.add("formulario__input-error-activo");
-    campos[password] = false;
+    campos.password2 = false;
     console.log("Funciona");
   } else {
     document
@@ -119,7 +121,7 @@ const validarPassword2 = () => {
     document
       .querySelector(`#grupo__password2 .formulario__input-error`)
       .classList.remove("formulario__input-error-activo");
-    campos[password] = true;
+    campos.password2 = true;
     console.log("Funciona");
   }
 };
@@ -133,14 +135,21 @@ $formulario.addEventListener("submit", (e) => {
   e.preventDefault();
 
   const $terminos = document.getElementById("terminos");
+  const formularioValido =
+    expresiones.usuario.test(document.getElementById("usuario").value) &&
+    expresiones.nombre.test(document.getElementById("nombre").value) &&
+    expresiones.password.test(document.getElementById("password").value) &&
+    document.getElementById("password").value === document.getElementById("password2").value &&
+    expresiones.correo.test(document.getElementById("correo").value) &&
+    expresiones.telefono.test(document.getElementById("telefono").value);
+
   if (
-    campos.usuario &&
-    campos.nombre &&
-    campos.password &&
-    campos.correo &&
-    campos.telefono &&
+    formularioValido &&
     $terminos.checked
   ) {
+    document
+      .getElementById("formulario__mensaje")
+      .classList.remove("formulario__mensaje-activo");
 
     document
       .getElementById("formulario__mensaje-exito")
@@ -149,8 +158,6 @@ $formulario.addEventListener("submit", (e) => {
       document
         .getElementById("formulario__mensaje-exito")
         .classList.remove("formulario__mensaje-exito-activo");
-      document.getElementById("formulario__grupo-terminos").style.display =
-        "none";
     }, 3000);
 
     document
@@ -159,9 +166,6 @@ $formulario.addEventListener("submit", (e) => {
         icono.classList.remove("formulario__grupo--correcto");
       });
 
-    setTimeout(() => {
-      location.reload();
-    }, 5000);
   } else {
     document
       .getElementById("formulario__mensaje")
